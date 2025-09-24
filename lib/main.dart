@@ -58,7 +58,7 @@ class MyApp extends StatelessWidget {
         iconTheme: IconThemeData(color: AppTheme.textColor),
       ),
       // This will affect the system navigation bar on some devices
-      bottomAppBarTheme: BottomAppBarTheme(color: AppTheme.backgroundColor),
+      // bottomAppBarTheme: BottomAppBarTheme(color: AppTheme.backgroundColor),
       colorScheme: ColorScheme.fromSwatch().copyWith(
         background: AppTheme.backgroundColor,
         surface: AppTheme.surfaceColor,
