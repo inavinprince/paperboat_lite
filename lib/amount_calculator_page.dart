@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
+import 'package:paperboat_lite/app_theme.dart';
+import 'package:paperboat_lite/product.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:file_picker/file_picker.dart';
+
+
+import 'package:responsive_framework/responsive_framework.dart';
 
 class AmountCalculatorPage extends StatefulWidget {
   const AmountCalculatorPage({super.key});
@@ -13,43 +18,21 @@ class AmountCalculatorPage extends StatefulWidget {
   State<AmountCalculatorPage> createState() => _AmountCalculatorPageState();
 }
 
-class _AmountCalculatorPageState extends State<AmountCalculatorPage>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<Color?> _gradientAnimation;
-  final List<Product> _products = [
-    Product(name: 'Product 1', balance: 200, rate: 50),
-    Product(name: 'Product 2', balance: 150, rate: 50),
+class _AmountCalculatorPageState extends State<AmountCalculatorPage> {
+  final List<Products> _products = [
+    Products(name: 'Product 1', balance: 200, rate: 50),
+    Products(name: 'Product 2', balance: 150, rate: 50),
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 3),
-    )..repeat(reverse: true);
-
-    _gradientAnimation = ColorTween(
-      begin: Colors.blueAccent,
-      end: Colors.purpleAccent,
-    ).animate(_animationController);
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  double get totalAmount {
-    return _products.fold(0, (sum, product) => sum + product.amount);
-  }
+  double get totalAmount => _products.fold(0, (sum, product) => sum + product.amount);
 
   void _addProduct() {
     setState(() {
-      _products.add(Product(
-          name: 'Product ${_products.length + 1}', balance: 0, rate: 0));
+      _products.add(Products(
+        name: 'Product ${_products.length + 1}', 
+        balance: 0, 
+        rate: 0
+      ));
     });
   }
 
@@ -61,292 +44,263 @@ class _AmountCalculatorPageState extends State<AmountCalculatorPage>
     }
   }
 
-  void _updateProduct(int index, Product updatedProduct) {
+  void _updateProduct(int index, Products updatedProduct) {
     setState(() {
       _products[index] = updatedProduct;
     });
   }
 
+  void _toggleTheme() {
+    setState(() {
+      AppTheme.toggleTheme();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isMobile = ResponsiveBreakpoints.of(context).smallerThan(TABLET);
+    final padding = isMobile ? 16.0 : 24.0;
+
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      body: AnimatedBuilder(
-        animation: _animationController,
-        builder: (context, child) {
-          return Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  _gradientAnimation.value!.withOpacity(0.1),
-                  Colors.white,
-                ],
+      backgroundColor: AppTheme.backgroundColor,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          'Paperboat Calculator',
+          style: AppTheme.titleTextStyle(isMobile),
+        ),
+        actions: [
+          IconButton(
+            onPressed: _toggleTheme,
+            icon: Icon(
+              AppTheme.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+              color: AppTheme.textColor,
+            ),
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(padding),
+          child: Column(
+            children: [
+              // Header Section
+              _buildHeaderSection(isMobile),
+              const SizedBox(height: 24),
+
+              // Table Header
+              _buildTableHeader(isMobile),
+              const SizedBox(height: 8),
+
+              // Products List
+              Expanded(
+                child: _buildProductsList(isMobile),
               ),
-            ),
-            child: child,
-          );
-        },
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Paperboat Calculator',
-                          style: GoogleFonts.poppins(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.indigo[900],
-                          ),
-                        ),
-                        Text(
-                          'Calculate your total amount effortlessly',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Colors.blueAccent, Colors.purpleAccent],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.blueAccent.withOpacity(0.3),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.calculate_rounded, color: Colors.white),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Total: \$${totalAmount.toStringAsFixed(2)}',
-                            style: GoogleFonts.poppins(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
 
-                // Table Header
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          'Product Name',
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w600,
-                            color: Colors.indigo[800],
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(
-                          'Balance',
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w600,
-                            color: Colors.indigo[800],
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(
-                          'Rate (%)',
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w600,
-                            color: Colors.indigo[800],
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(
-                          'Amount',
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w600,
-                            color: Colors.indigo[800],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 40), // Space for delete button
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
-
-                // Products List
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: _products.length,
-                    itemBuilder: (context, index) {
-                      return AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        margin: const EdgeInsets.only(bottom: 8),
-                        child: _ProductRow(
-                          product: _products[index],
-                          onChanged: (updatedProduct) =>
-                              _updateProduct(index, updatedProduct),
-                          onDelete: () => _removeProduct(index),
-                          canDelete: _products.length > 1,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-
-                // Add Product Button
-                Center(
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    child: ElevatedButton.icon(
-                      onPressed: _addProduct,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.indigo,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(color: Colors.indigo.shade200),
-                        ),
-                        elevation: 2,
-                      ),
-                      icon: const Icon(Icons.add_circle_outline_rounded),
-                      label: Text(
-                        'Add Product',
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Total Amount Card
-                const SizedBox(height: 20),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.green[50]!, Colors.blue[50]!],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.green.shade100),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Total Amount:',
-                        style: GoogleFonts.poppins(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.green[900],
-                        ),
-                      ),
-                      Text(
-                        '\$${totalAmount.toStringAsFixed(2)}',
-                        style: GoogleFonts.poppins(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.green[800],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                ElevatedButton.icon(
-                  onPressed: () =>
-                      PDFExportService.generateAndExportPDF(_products, context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigo,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  icon: const Icon(Icons.picture_as_pdf),
-                  label: const Text(
-                    'Export PDF Report',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                )
-              ],
-            ),
+              // Action Section
+              _buildActionSection(isMobile),
+            ],
           ),
         ),
       ),
     );
   }
+
+  Widget _buildHeaderSection(bool isMobile) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Calculate totals effortlessly',
+                style: AppTheme.subtitleTextStyle(isMobile),
+              ),
+            ],
+          ),
+        ),
+        if (!isMobile) _buildTotalBadge(isMobile, false),
+      ],
+    );
+  }
+
+  Widget _buildTotalBadge(bool isMobile, bool isMobileVersion) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      padding: isMobileVersion 
+          ? const EdgeInsets.all(12)
+          : const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        gradient: AppTheme.primaryGradient,
+        borderRadius: BorderRadius.circular(isMobileVersion ? 8 : 12),
+        border: Border.all(color: AppTheme.borderColor),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.calculate, color: Colors.white, size: isMobile ? 16 : 18),
+          const SizedBox(width: 6),
+          Text(
+            'Total: \$${totalAmount.toStringAsFixed(2)}',
+            style: GoogleFonts.poppins(
+              fontSize: isMobile ? 12 : 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTableHeader(bool isMobile) {
+    return Container(
+      padding: EdgeInsets.all(isMobile ? 12 : 16),
+      decoration: BoxDecoration(
+        color: AppTheme.cardColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: isMobile ? 3 : 2,
+            child: Text('Product', style: AppTheme.headerTextStyle(isMobile)),
+          ),
+          Expanded(child: Text('Balance', style: AppTheme.headerTextStyle(isMobile))),
+          Expanded(child: Text('Rate %', style: AppTheme.headerTextStyle(isMobile))),
+          Expanded(child: Text('Amount', style: AppTheme.headerTextStyle(isMobile))),
+          SizedBox(width: isMobile ? 30 : 40),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProductsList(bool isMobile) {
+    return ListView.builder(
+      physics: const BouncingScrollPhysics(),
+      itemCount: _products.length,
+      itemBuilder: (context, index) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 6),
+          child: ProductRow(
+            product: _products[index],
+            onChanged: (updatedProduct) => _updateProduct(index, updatedProduct),
+            onDelete: () => _removeProduct(index),
+            canDelete: _products.length > 1,
+            isMobile: isMobile,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildActionSection(bool isMobile) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(child: _buildAddButton(isMobile)),
+            const SizedBox(width: 12),
+            Expanded(child: _buildExportButton(isMobile)),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _buildTotalCard(isMobile),
+        const SizedBox(height: 20),
+        _buildFooter(),
+      ],
+    );
+  }
+
+  Widget _buildAddButton(bool isMobile) {
+    return ElevatedButton.icon(
+      onPressed: _addProduct,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppTheme.buttonColor,
+        foregroundColor: Colors.white,
+        padding: EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: isMobile ? 10 : 12,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      icon: Icon(Icons.add, size: isMobile ? 16 : 18),
+      label: Text('Add Product', style: AppTheme.buttonTextStyle(isMobile)),
+    );
+  }
+
+  Widget _buildExportButton(bool isMobile) {
+    return ElevatedButton.icon(
+      onPressed: () => PDFExportService.generateAndExportPDF(_products, context),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppTheme.secondaryButtonColor,
+        foregroundColor: Colors.white,
+        padding: EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: isMobile ? 10 : 12,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      icon: Icon(Icons.picture_as_pdf, size: isMobile ? 16 : 18),
+      label: Text('Export PDF', style: AppTheme.buttonTextStyle(isMobile)),
+    );
+  }
+
+  Widget _buildTotalCard(bool isMobile) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: AppTheme.totalGradient,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppTheme.borderColor),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text('Total Amount:', style: AppTheme.totalLabelTextStyle(isMobile)),
+          Text(
+            '\$${totalAmount.toStringAsFixed(2)}',
+            style: AppTheme.totalAmountTextStyle(isMobile),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFooter() {
+    return Text(
+      'Developed by: @navinprince',
+      style: AppTheme.footerTextStyle(),
+    );
+  }
 }
 
-class _ProductRow extends StatefulWidget {
-  final Product product;
-  final Function(Product) onChanged;
+class ProductRow extends StatefulWidget {
+  final Products product;
+  final Function(Products) onChanged;
   final VoidCallback onDelete;
   final bool canDelete;
+  final bool isMobile;
 
-  const _ProductRow({
+  const ProductRow({
+    super.key,
     required this.product,
     required this.onChanged,
     required this.onDelete,
     required this.canDelete,
+    required this.isMobile,
   });
 
   @override
-  State<_ProductRow> createState() => _ProductRowState();
+  State<ProductRow> createState() => _ProductRowState();
 }
 
-class _ProductRowState extends State<_ProductRow> {
+class _ProductRowState extends State<ProductRow> {
   late TextEditingController _nameController;
   late TextEditingController _balanceController;
   late TextEditingController _rateController;
@@ -354,11 +308,51 @@ class _ProductRowState extends State<_ProductRow> {
   @override
   void initState() {
     super.initState();
+    _initializeControllers();
+  }
+
+  void _initializeControllers() {
     _nameController = TextEditingController(text: widget.product.name);
-    _balanceController =
-        TextEditingController(text: widget.product.balance.toString());
-    _rateController =
-        TextEditingController(text: widget.product.rate.toString());
+    _balanceController = TextEditingController(text: widget.product.balance.toStringAsFixed(0));
+    _rateController = TextEditingController(text: widget.product.rate.toStringAsFixed(0));
+    
+    // Add listeners for real-time updates
+    _nameController.addListener(_onNameChanged);
+    _balanceController.addListener(_onBalanceChanged);
+    _rateController.addListener(_onRateChanged);
+  }
+
+  void _onNameChanged() {
+    widget.onChanged(widget.product.copyWith(name: _nameController.text));
+  }
+
+  void _onBalanceChanged() {
+    final balance = double.tryParse(_balanceController.text) ?? 0;
+    widget.onChanged(widget.product.copyWith(balance: balance));
+  }
+
+  void _onRateChanged() {
+    final rate = double.tryParse(_rateController.text) ?? 0;
+    widget.onChanged(widget.product.copyWith(rate: rate));
+  }
+
+  @override
+  void didUpdateWidget(ProductRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    
+    // Update controllers only if the product data actually changed
+    if (oldWidget.product.name != widget.product.name && 
+        _nameController.text != widget.product.name) {
+      _nameController.text = widget.product.name;
+    }
+    if (oldWidget.product.balance != widget.product.balance &&
+        _balanceController.text != widget.product.balance.toStringAsFixed(0)) {
+      _balanceController.text = widget.product.balance.toStringAsFixed(0);
+    }
+    if (oldWidget.product.rate != widget.product.rate &&
+        _rateController.text != widget.product.rate.toStringAsFixed(0)) {
+      _rateController.text = widget.product.rate.toStringAsFixed(0);
+    }
   }
 
   @override
@@ -369,106 +363,92 @@ class _ProductRowState extends State<_ProductRow> {
     super.dispose();
   }
 
-  void _updateProduct() {
-    final updatedProduct = Product(
-      name: _nameController.text,
-      balance: double.tryParse(_balanceController.text) ?? 0,
-      rate: double.tryParse(_rateController.text) ?? 0,
-    );
-    widget.onChanged(updatedProduct);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(widget.isMobile ? 10 : 12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: AppTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
         children: [
-          Expanded(
-            flex: 2,
-            child: TextField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                hintText: 'Product name',
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-              ),
-              style: GoogleFonts.poppins(),
-              onChanged: (value) => _updateProduct(),
-            ),
-          ),
-          Expanded(
-            child: TextField(
-              controller: _balanceController,
-              decoration: InputDecoration(
-                hintText: '0',
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-              ),
-              style: GoogleFonts.poppins(),
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-              ],
-              onChanged: (value) => _updateProduct(),
-            ),
-          ),
-          Expanded(
-            child: TextField(
-              controller: _rateController,
-              decoration: InputDecoration(
-                hintText: '0',
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-                suffixText: '%',
-              ),
-              style: GoogleFonts.poppins(),
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-              ],
-              onChanged: (value) => _updateProduct(),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              '\$${widget.product.amount.toStringAsFixed(2)}',
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w600,
-                color: Colors.green[700],
-              ),
-            ),
-          ),
-          AnimatedOpacity(
-            duration: const Duration(milliseconds: 300),
-            opacity: widget.canDelete ? 1.0 : 0.0,
-            child: IconButton(
-              onPressed: widget.canDelete ? widget.onDelete : null,
-              icon: Icon(Icons.delete_outline_rounded,
-                  color: Colors.red.shade300),
-              splashRadius: 20,
-            ),
-          ),
+          _buildTextField(_nameController, 'Product name', flex: widget.isMobile ? 3 : 2),
+          _buildNumberField(_balanceController, ''),
+          _buildNumberField(_rateController, '', isRate: true),
+          _buildAmountDisplay(),
+          _buildDeleteButton(),
         ],
       ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String hint, {int flex = 1}) {
+    return Expanded(
+      flex: flex,
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          hintText: hint,
+          border: InputBorder.none,
+          isDense: true,
+          contentPadding: EdgeInsets.zero,
+          hintStyle: TextStyle(
+            color: Colors.grey[500],
+            fontSize: widget.isMobile ? 10 : 12,
+          ),
+        ),
+        style: AppTheme.bodyTextStyle(widget.isMobile),
+      ),
+    );
+  }
+
+  Widget _buildNumberField(TextEditingController controller, String suffix, {bool isRate = false}) {
+    return Expanded(
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          isDense: true,
+          contentPadding: EdgeInsets.zero,
+          suffixText: suffix,
+          suffixStyle: TextStyle(color: Colors.grey[500], fontSize: 10),
+        ),
+        style: AppTheme.bodyTextStyle(widget.isMobile),
+        keyboardType: TextInputType.number,
+      ),
+    );
+  }
+
+  Widget _buildAmountDisplay() {
+    return Expanded(
+      child: Text(
+        '\$${widget.product.amount.toStringAsFixed(2)}',
+        style: AppTheme.amountTextStyle(widget.isMobile),
+      ),
+    );
+  }
+
+  Widget _buildDeleteButton() {
+    return IconButton(
+      onPressed: widget.canDelete ? widget.onDelete : null,
+      icon: Icon(
+        Icons.delete_outline,
+        size: widget.isMobile ? 16 : 18,
+        color: Colors.grey[500],
+      ),
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(),
     );
   }
 }
 
+
+
+
+
+
+// pdf invoice part
 class Product {
   String name;
   double balance;
@@ -485,7 +465,7 @@ class Product {
 
 class PDFExportService {
   static Future<void> generateAndExportPDF(
-      List<Product> products, BuildContext context) async {
+      List<Products> products, BuildContext context) async {
     // Create PDF document
     final pdf = pw.Document();
 
@@ -561,7 +541,7 @@ class PDFExportService {
     );
   }
 
-  static pw.Widget _buildProductsTable(List<Product> products) {
+  static pw.Widget _buildProductsTable(List<Products> products) {
     return pw.Container(
       decoration: pw.BoxDecoration(
         border: pw.Border.all(color: PdfColors.grey300, width: 1),
@@ -600,7 +580,7 @@ class PDFExportService {
     );
   }
 
-  static pw.Widget _buildTotalAmount(List<Product> products) {
+  static pw.Widget _buildTotalAmount(List<Products> products) {
     final totalAmount = products.fold<double>(0.0, (sum, product) {
       final productAmount = product.amount;
       return sum + (productAmount ?? 0.0);
@@ -639,7 +619,7 @@ class PDFExportService {
   }
 
   static Future<void> _showExportOptions(
-      BuildContext context, pw.Document pdf, List<Product> products) async {
+      BuildContext context, pw.Document pdf, List<Products> products) async {
     final result = await showModalBottomSheet<int>(
       context: context,
       builder: (context) => Container(
