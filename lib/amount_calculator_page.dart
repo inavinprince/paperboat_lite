@@ -8,7 +8,6 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:file_picker/file_picker.dart';
 
-
 import 'package:responsive_framework/responsive_framework.dart';
 
 class AmountCalculatorPage extends StatefulWidget {
@@ -24,15 +23,13 @@ class _AmountCalculatorPageState extends State<AmountCalculatorPage> {
     Products(name: 'Product 2', balance: 150, rate: 50),
   ];
 
-  double get totalAmount => _products.fold(0, (sum, product) => sum + product.amount);
+  double get totalAmount =>
+      _products.fold(0, (sum, product) => sum + product.amount);
 
   void _addProduct() {
     setState(() {
       _products.add(Products(
-        name: 'Product ${_products.length + 1}', 
-        balance: 0, 
-        rate: 0
-      ));
+          name: 'Product ${_products.length + 1}', balance: 0, rate: 0));
     });
   }
 
@@ -131,7 +128,7 @@ class _AmountCalculatorPageState extends State<AmountCalculatorPage> {
   Widget _buildTotalBadge(bool isMobile, bool isMobileVersion) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
-      padding: isMobileVersion 
+      padding: isMobileVersion
           ? const EdgeInsets.all(12)
           : const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -170,9 +167,13 @@ class _AmountCalculatorPageState extends State<AmountCalculatorPage> {
             flex: isMobile ? 3 : 2,
             child: Text('Product', style: AppTheme.headerTextStyle(isMobile)),
           ),
-          Expanded(child: Text('Balance', style: AppTheme.headerTextStyle(isMobile))),
-          Expanded(child: Text('Rate %', style: AppTheme.headerTextStyle(isMobile))),
-          Expanded(child: Text('Amount', style: AppTheme.headerTextStyle(isMobile))),
+          Expanded(
+              child:
+                  Text('Balance', style: AppTheme.headerTextStyle(isMobile))),
+          Expanded(
+              child: Text('Rate %', style: AppTheme.headerTextStyle(isMobile))),
+          Expanded(
+              child: Text('Amount', style: AppTheme.headerTextStyle(isMobile))),
           SizedBox(width: isMobile ? 30 : 40),
         ],
       ),
@@ -188,7 +189,8 @@ class _AmountCalculatorPageState extends State<AmountCalculatorPage> {
           margin: const EdgeInsets.only(bottom: 6),
           child: ProductRow(
             product: _products[index],
-            onChanged: (updatedProduct) => _updateProduct(index, updatedProduct),
+            onChanged: (updatedProduct) =>
+                _updateProduct(index, updatedProduct),
             onDelete: () => _removeProduct(index),
             canDelete: _products.length > 1,
             isMobile: isMobile,
@@ -228,14 +230,15 @@ class _AmountCalculatorPageState extends State<AmountCalculatorPage> {
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
-      icon: Icon(Icons.add, size: isMobile ? 16 : 18),
+      icon: Icon(Icons.add, color: Colors.white, size: isMobile ? 16 : 18),
       label: Text('Add Product', style: AppTheme.buttonTextStyle(isMobile)),
     );
   }
 
   Widget _buildExportButton(bool isMobile) {
     return ElevatedButton.icon(
-      onPressed: () => PDFExportService.generateAndExportPDF(_products, context),
+      onPressed: () =>
+          PDFExportService.generateAndExportPDF(_products, context),
       style: ElevatedButton.styleFrom(
         backgroundColor: AppTheme.secondaryButtonColor,
         foregroundColor: Colors.white,
@@ -245,7 +248,8 @@ class _AmountCalculatorPageState extends State<AmountCalculatorPage> {
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
-      icon: Icon(Icons.picture_as_pdf, size: isMobile ? 16 : 18),
+      icon: Icon(Icons.picture_as_pdf,
+          color: AppTheme.accentColor, size: isMobile ? 16 : 18),
       label: Text('Export PDF', style: AppTheme.buttonTextStyle(isMobile)),
     );
   }
@@ -313,9 +317,11 @@ class _ProductRowState extends State<ProductRow> {
 
   void _initializeControllers() {
     _nameController = TextEditingController(text: widget.product.name);
-    _balanceController = TextEditingController(text: widget.product.balance.toStringAsFixed(0));
-    _rateController = TextEditingController(text: widget.product.rate.toStringAsFixed(0));
-    
+    _balanceController =
+        TextEditingController(text: widget.product.balance.toStringAsFixed(0));
+    _rateController =
+        TextEditingController(text: widget.product.rate.toStringAsFixed(0));
+
     // Add listeners for real-time updates
     _nameController.addListener(_onNameChanged);
     _balanceController.addListener(_onBalanceChanged);
@@ -339,9 +345,9 @@ class _ProductRowState extends State<ProductRow> {
   @override
   void didUpdateWidget(ProductRow oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Update controllers only if the product data actually changed
-    if (oldWidget.product.name != widget.product.name && 
+    if (oldWidget.product.name != widget.product.name &&
         _nameController.text != widget.product.name) {
       _nameController.text = widget.product.name;
     }
@@ -373,7 +379,8 @@ class _ProductRowState extends State<ProductRow> {
       ),
       child: Row(
         children: [
-          _buildTextField(_nameController, 'Product name', flex: widget.isMobile ? 3 : 2),
+          _buildTextField(_nameController, 'Product name',
+              flex: widget.isMobile ? 3 : 2),
           _buildNumberField(_balanceController, ''),
           _buildNumberField(_rateController, '', isRate: true),
           _buildAmountDisplay(),
@@ -383,7 +390,8 @@ class _ProductRowState extends State<ProductRow> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String hint, {int flex = 1}) {
+  Widget _buildTextField(TextEditingController controller, String hint,
+      {int flex = 1}) {
     return Expanded(
       flex: flex,
       child: TextField(
@@ -403,7 +411,8 @@ class _ProductRowState extends State<ProductRow> {
     );
   }
 
-  Widget _buildNumberField(TextEditingController controller, String suffix, {bool isRate = false}) {
+  Widget _buildNumberField(TextEditingController controller, String suffix,
+      {bool isRate = false}) {
     return Expanded(
       child: TextField(
         controller: controller,
@@ -443,11 +452,6 @@ class _ProductRowState extends State<ProductRow> {
   }
 }
 
-
-
-
-
-
 // pdf invoice part
 class Product {
   String name;
@@ -466,6 +470,14 @@ class Product {
 class PDFExportService {
   static Future<void> generateAndExportPDF(
       List<Products> products, BuildContext context) async {
+    // 1️⃣ Load the Unicode-compatible font
+    final fontData = await rootBundle.load('fonts/NotoSans-Regular.ttf');
+    final ttf = pw.Font.ttf(fontData);
+
+    // 2️⃣ Load the network image for logo
+    final logoImage =
+        await networkImage('https://i.postimg.cc/zBxd3NP3/paperboat.jpg');
+
     // Create PDF document
     final pdf = pw.Document();
 
@@ -479,16 +491,16 @@ class PDFExportService {
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                // Header section
-                _buildHeader(),
+                // Header section with custom font + logo image
+                _buildHeader(ttf, logoImage),
                 pw.SizedBox(height: 20),
 
-                // Products table
-                _buildProductsTable(products),
+                // Products table with custom font
+                _buildProductsTable(products, ttf),
                 pw.SizedBox(height: 20),
 
-                // Total amount section
-                _buildTotalAmount(products),
+                // Total amount section with custom font
+                _buildTotalAmount(products, ttf),
               ],
             ),
           );
@@ -500,7 +512,7 @@ class PDFExportService {
     await _showExportOptions(context, pdf, products);
   }
 
-  static pw.Widget _buildHeader() {
+  static pw.Widget _buildHeader(pw.Font ttf, pw.ImageProvider logoImage) {
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
       children: [
@@ -510,6 +522,7 @@ class PDFExportService {
             pw.Text(
               'Paperboat Invoice',
               style: pw.TextStyle(
+                font: ttf,
                 fontSize: 24,
                 fontWeight: pw.FontWeight.bold,
                 color: PdfColors.blue800,
@@ -518,7 +531,11 @@ class PDFExportService {
             pw.SizedBox(height: 4),
             pw.Text(
               'Generated on: ${DateTime.now().toString().split(' ')[0]}',
-              style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey600),
+              style: pw.TextStyle(
+                font: ttf,
+                fontSize: 10,
+                color: PdfColors.grey600,
+              ),
             ),
           ],
         ),
@@ -530,18 +547,14 @@ class PDFExportService {
             borderRadius: pw.BorderRadius.circular(30),
           ),
           child: pw.Center(
-            child: pw.Icon(
-              pw.IconData(0xe922), // Analytics icon code
-              size: 24,
-              color: PdfColors.blue800,
-            ),
+            child: pw.Image(logoImage, width: 30, height: 30), // ✅ Logo here
           ),
         ),
       ],
     );
   }
 
-  static pw.Widget _buildProductsTable(List<Products> products) {
+  static pw.Widget _buildProductsTable(List<Products> products, pw.Font ttf) {
     return pw.Container(
       decoration: pw.BoxDecoration(
         border: pw.Border.all(color: PdfColors.grey300, width: 1),
@@ -558,14 +571,16 @@ class PDFExportService {
           ),
         ),
         headerStyle: pw.TextStyle(
+          font: ttf,
           fontWeight: pw.FontWeight.bold,
           color: PdfColors.blue900,
           fontSize: 12,
         ),
-        cellStyle: const pw.TextStyle(fontSize: 10),
+        cellStyle: pw.TextStyle(font: ttf, fontSize: 10),
         rowDecoration: pw.BoxDecoration(
           border: pw.Border(
-              bottom: pw.BorderSide(color: PdfColors.grey200, width: 0.5)),
+            bottom: pw.BorderSide(color: PdfColors.grey200, width: 0.5),
+          ),
         ),
         headers: ['Product Name', 'Balance', 'Rate %', 'Amount'],
         data: products
@@ -580,7 +595,7 @@ class PDFExportService {
     );
   }
 
-  static pw.Widget _buildTotalAmount(List<Products> products) {
+  static pw.Widget _buildTotalAmount(List<Products> products, pw.Font ttf) {
     final totalAmount = products.fold<double>(0.0, (sum, product) {
       final productAmount = product.amount;
       return sum + (productAmount ?? 0.0);
@@ -600,6 +615,7 @@ class PDFExportService {
           pw.Text(
             'TOTAL AMOUNT:',
             style: pw.TextStyle(
+              font: ttf,
               fontSize: 14,
               fontWeight: pw.FontWeight.bold,
               color: PdfColors.green900,
@@ -608,6 +624,7 @@ class PDFExportService {
           pw.Text(
             '\$${totalAmount.toStringAsFixed(2)}',
             style: pw.TextStyle(
+              font: ttf,
               fontSize: 18,
               fontWeight: pw.FontWeight.bold,
               color: PdfColors.green900,

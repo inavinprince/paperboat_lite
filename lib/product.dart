@@ -1,4 +1,3 @@
-// product.dart
 class Products {
   String name;
   double balance;
