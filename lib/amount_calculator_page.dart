@@ -102,7 +102,7 @@ class _AmountCalculatorPageState extends State<AmountCalculatorPage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Amount Calculator',
+                          'Paperboat Calculator',
                           style: GoogleFonts.poppins(
                             fontSize: 32,
                             fontWeight: FontWeight.w700,
@@ -299,6 +299,8 @@ class _AmountCalculatorPageState extends State<AmountCalculatorPage>
                     ],
                   ),
                 ),
+
+                const SizedBox(height: 20),
 
                 ElevatedButton.icon(
                   onPressed: () =>
@@ -526,7 +528,7 @@ class PDFExportService {
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
             pw.Text(
-              'PRODUCT REPORT',
+              'Paperboat Invoice',
               style: pw.TextStyle(
                 fontSize: 24,
                 fontWeight: pw.FontWeight.bold,
@@ -548,9 +550,10 @@ class PDFExportService {
             borderRadius: pw.BorderRadius.circular(30),
           ),
           child: pw.Center(
-            child: pw.Text(
-              '📊',
-              style: const pw.TextStyle(fontSize: 20),
+            child: pw.Icon(
+              pw.IconData(0xe922), // Analytics icon code
+              size: 24,
+              color: PdfColors.blue800,
             ),
           ),
         ),
